@@ -1,10 +1,9 @@
-name: Update iNews Stream URL
+name: Update iNews Redirect Link
 
 on:
   schedule:
-    # Berjalan setiap 3 jam untuk memastikan URL sentiasa segar
-    - cron: '0 */3 * * *'
-  workflow_dispatch: # Membolehkan anda run secara manual bila-bila masa
+    - cron: '0 */3 * * *' # Auto-update setiap 3 jam
+  workflow_dispatch: # Boleh run manual
 
 jobs:
   update-link:
@@ -19,32 +18,32 @@ jobs:
         # 1. Download playlist rujukan
         curl -s "https://raw.githubusercontent.com/apistech/project/refs/heads/main/playlists/rctiplus.m3u" -o rctiplus.m3u
 
-        # 2. Cari baris yang mengandungi iNews dan ambil URL di bawahnya
-        # Script ini mencari perkataan 'iNews' (case-insensitive) dan mengambil 1 baris selepasnya
+        # 2. Ambil URL iNews yang paling segar
         INEWS_URL=$(grep -A 1 -i "iNews" rctiplus.m3u | grep -v "iNews" | grep "http" | tr -d '\r' | xargs)
 
         if [ -z "$INEWS_URL" ]; then
-          echo "Ralat: URL iNews tidak dijumpai dalam playlist sumber."
+          echo "Ralat: URL iNews tidak dijumpai."
           exit 1
         fi
 
-        # 3. Bina fail m3u8 baru yang mengandungi channel iNews sahaja
-        echo "#EXTM3U" > inews.m3u8
-        echo "#EXTINF:-1 tvg-id=\"iNews\" tvg-name=\"iNews\" tvg-logo=\"https://upload.wikimedia.org/wikipedia/commons/b/be/INews_2023.svg\" group-title=\"Indonesia\",iNews" >> inews.m3u8
-        echo "$INEWS_URL" >> inews.m3u8
+        # 3. Bina fail index.html untuk buat HTTP/HTML redirect
+        # Cara ini akan paksa IPTV Player pergi ke URL iNews yang ada token terkini
+        echo "<!DOCTYPE html><html><head>" > index.html
+        echo "<meta http-equiv=\"refresh\" content=\"0; url=$INEWS_URL\">" >> index.html
+        echo "<script>window.location.replace(\"$INEWS_URL\");</script>" >> index.html
+        echo "</head><body>Redirecting to iNews...</body></html>" >> index.html
 
-        echo "URL iNews berjaya dikemas kini: $INEWS_URL"
+        echo "Redirect berjaya dihalakan ke: $INEWS_URL"
 
     - name: Commit and Push Changes
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         
-        # Semak jika ada perubahan sebelum commit untuk elakkan error kosong
-        if git status --porcelain | grep -q "inews.m3u8"; then
-          git add inews.m3u8
-          git commit -m "Autoupdate iNews URL: $(date)"
+        if git status --porcelain | grep -q "index.html"; then
+          git add index.html
+          git commit -m "Update iNews Redirect: $(date)"
           git push
         else
-          echo "Tiada perubahan pada URL."
+          echo "Tiada perubahan URL dikesan."
         fi
