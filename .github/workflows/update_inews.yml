@@ -1,0 +1,50 @@
+name: Update iNews Stream URL
+
+on:
+  schedule:
+    # Berjalan setiap 3 jam untuk memastikan URL sentiasa segar
+    - cron: '0 */3 * * *'
+  workflow_dispatch: # Membolehkan anda run secara manual bila-bila masa
+
+jobs:
+  update-link:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Fetch and Extract iNews URL
+      run: |
+        # 1. Download playlist rujukan
+        curl -s "https://raw.githubusercontent.com/apistech/project/refs/heads/main/playlists/rctiplus.m3u" -o rctiplus.m3u
+
+        # 2. Cari baris yang mengandungi iNews dan ambil URL di bawahnya
+        # Script ini mencari perkataan 'iNews' (case-insensitive) dan mengambil 1 baris selepasnya
+        INEWS_URL=$(grep -A 1 -i "iNews" rctiplus.m3u | grep -v "iNews" | grep "http" | tr -d '\r' | xargs)
+
+        if [ -z "$INEWS_URL" ]; then
+          echo "Ralat: URL iNews tidak dijumpai dalam playlist sumber."
+          exit 1
+        fi
+
+        # 3. Bina fail m3u8 baru yang mengandungi channel iNews sahaja
+        echo "#EXTM3U" > inews.m3u8
+        echo "#EXTINF:-1 tvg-id=\"iNews\" tvg-name=\"iNews\" tvg-logo=\"https://upload.wikimedia.org/wikipedia/commons/b/be/INews_2023.svg\" group-title=\"Indonesia\",iNews" >> inews.m3u8
+        echo "$INEWS_URL" >> inews.m3u8
+
+        echo "URL iNews berjaya dikemas kini: $INEWS_URL"
+
+    - name: Commit and Push Changes
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        
+        # Semak jika ada perubahan sebelum commit untuk elakkan error kosong
+        if git status --porcelain | grep -q "inews.m3u8"; then
+          git add inews.m3u8
+          git commit -m "Autoupdate iNews URL: $(date)"
+          git push
+        else
+          echo "Tiada perubahan pada URL."
+        fi
