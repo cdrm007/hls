@@ -1,1 +1,1 @@
-#EXTVLCOPT:http-referrer=https://m.rctiplus.com/ https://inews-linier.rctiplus.id/inews-sdi.m3u8?hdnts=exp=1786898504~hmac=84b4e5b92ec87e477b49b50027d918c07742147cd563296b997eaec61179c423
+#EXTVLCOPT:http-referrer=https://m.rctiplus.com/ https://inews-linier.rctiplus.id/inews-sdi.m3u8?hdnts=exp=1786920166~hmac=c67485dd4155c0be1788c6facf0c6fcaecf35ee96798bee12fac4f7a8cc50c72
