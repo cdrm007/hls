@@ -1,1 +1,1 @@
-#EXTVLCOPT:http-referrer=https://www.rctiplus.com/ https://proxy-b.rctiplus.id/live/web/inews-bkp/index.m3u8?auth_key=1792524723-539018768018c6838aab8b4d977c9e13-0-22d21c9c847c772f97f99a49c7aeddc8
+#EXTVLCOPT:http-referrer=https://www.rctiplus.com/ https://proxy-b.rctiplus.id/live/web/inews-bkp/index.m3u8?auth_key=1792542244-987d867871638d019cc2fe5ba23f9609-0-97707488c2ef72b310123b46f4320cfd
